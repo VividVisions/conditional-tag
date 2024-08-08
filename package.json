@@ -1,0 +1,64 @@
+{
+	"name": "conditional-tag",
+	"version": "1.0.0",
+	"description": "Clean, easily readable conditional statements in template literals/strings for Node.js and browsers. Provides `if` / `elseif` / `else` and `switch` / `case` / `default` syntax options.",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/VividVisions/conditional-tag.git"
+	},
+	"homepage": "https://github.com/VividVisions/conditional-tag",
+	"bugs": "https://github.com/VividVisions/conditional-tag/issues",
+	"browser": "./browser/conditional-tag.min.js",
+	"keywords": [
+		"conditional",
+		"tag",
+		"tagged",
+		"template",
+		"literal",
+		"literals",
+		"string",
+		"strings",
+		"if",
+		"elseif",
+		"else",
+		"switch",
+		"case",
+		"node",
+		"nodejs",
+		"browser"
+	],
+	"author": "Walter Krivanek <walter@vividvisions.com>",
+	"license": "MIT",
+	"engines": {
+		"node": ">=18.20"
+	},
+	"scripts": {
+		"build": "npx rollup --config rollup.config.js",
+		"dist": "NODE_ENV=production npm run build",
+		"test": "NODE_ENV=testing mocha --require \"./test/hooks.js\" \"./test/**/*.test.js\"",
+		"test:package": "NODE_ENV=testing mocha \"./test/package.test.js\"",
+		"test:coverage": "c8 -c './.c8rc.json' npm test"
+	},
+	"imports": {
+		"#lib/*": "./lib/*"
+	},
+	"exports": {
+		".": "./index.js"
+	},
+	"dependencies": {
+		"debug": "^4.3.6"
+	},
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^26.0.1",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-strip": "^3.0.4",
+		"@rollup/plugin-terser": "^0.4.4",
+		"c8": "^10.1.2",
+		"chai": "^5.1.1",
+		"colorette": "^2.0.20",
+		"git-repo-info": "^2.1.1",
+		"mocha": "^10.7.0",
+		"rollup": "^4.20.0"
+	}
+}
