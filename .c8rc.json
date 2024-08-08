@@ -1,0 +1,10 @@
+{
+	"src": [
+		"./index,js", 
+		"./lib"
+	],
+	"exclude": ["node_modules", "docs", "test"],
+	"all": true,
+	"temp-directory": "./test/coverage/tmp",
+	"clean": true
+}
