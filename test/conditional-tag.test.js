@@ -1,10 +1,12 @@
 
-import { expect } from 'chai';
-import { _, _if, _elseif, _else, _endif, _switch, _case, _default, _endswitch, _always } from 'conditional-tag';
+import { expect, spy } from './chai.js';
+import { _, _async, _if, _elseif, _else, _endif, _switch, _case, _default, _endswitch, _always } from 'conditional-tag';
 import { ConditionalTagSyntaxError } from '#lib/error.js';
 
 describe('Rendering', function() {
-	describe('if syntax', function() {
+	
+	describe('_if syntax', function() {
+		
 		it('Correctly renders _if expression', function() {
 			const test = _`.${_if(true)}IF${_elseif(false)}ELSEIF${_elseif(false)}ELSEIF2${_else}ELSE${_endif}.`;
 			expect(test).to.equal(`.IF.`);
@@ -34,9 +36,12 @@ describe('Rendering', function() {
 			const test = _`${_if(false)}IF1${_elseif(false)}.ELSEIF${_else}.ELSE`;
 			expect(test).to.equal('.ELSE');
 		});
+
 	});
 
-	describe('switch syntax', function() {
+
+	describe('_switch syntax', function() {
+		
 		it('Correctly renders _switch expression', function() {
 			const test = _`${_switch(1)}.`;
 			expect(test).to.equal(`.`);
@@ -69,9 +74,11 @@ describe('Rendering', function() {
 			const test = _`${_switch(false)}SWITCH${_case(true)}.CASE1${_case(false)}.CASE2`;
 			expect(test).to.equal('SWITCH.CASE2');
 		});
+
 	});
 	
-	describe('always syntax', function() {
+
+	describe('_always syntax', function() {
 		
 		it('Correctly renders _always in rendered block', function() {
 			let test = _`${_switch(true)}SWITCH${_case(true)}.CASE1${_always}.ALWAYS${_case(false)}.CASE2`;
@@ -88,7 +95,56 @@ describe('Rendering', function() {
 			test = _`${_if(false)}IF${_always}.ALWAYS${_elseif(true)}.ELSEIF${_else}.ELSE`;
 			expect(test).to.equal('.ALWAYS.ELSEIF');
 		});
+
 	});
+
+
+	describe('Wrapped function expressions', function() {
+		
+		const func = function() {
+			return '.CALLED';
+		}
+
+		beforeEach(function () {
+			this.spiedFunc = spy(func);
+		});
+
+		it('Only calls wrapped functions if condition is met', function() {
+			const test = _`${_switch(true)}SWITCH${_case(true)}.CASE1${() => this.spiedFunc()}${_case(false)}.CASE2${() => this.spiedFunc()}`;
+			
+			expect(test).to.equal('SWITCH.CASE1.CALLED');
+			expect(this.spiedFunc).to.have.been.called.once;
+		});
+
+	});
+
+
+	describe('Wrapped async function expressions', function() {
+		
+		const func = function() {
+			return Promise.resolve('.CALLED');
+		}
+
+		beforeEach(function () {
+			this.spiedFunc = spy(func);
+		});
+
+		it('Only calls wrapped functions if condition is met', async function() {
+			const test = await _async`${_switch(true)}SWITCH${_case(true)}.CASE1${() => this.spiedFunc()}${_case(false)}.CASE2${() => this.spiedFunc()}`;
+			
+			expect(test).to.equal('SWITCH.CASE1.CALLED');
+			expect(this.spiedFunc).to.have.been.called.once;
+		});
+
+		it('Throws error if async function expression is used with sync _', async function() {
+			
+			expect(function() {
+				const test = _`${() => func()}`;	
+			}).to.throw(Error);
+		});
+
+	});
+
 
 	describe('Line/Whitespace trimming', function() {
 
@@ -133,12 +189,14 @@ describe('Rendering', function() {
 
 			expect(test).to.equal('a\r\nb');
 		});
-	});
 
+	});
 });
+
 
 describe('Syntax errors', function() {
 	describe('if syntax', function() {
+		
 		it('throws when _if occurs more than once', function() {
 			expect(() => _`${_if(true)}${_if(true)}`).to.throw(ConditionalTagSyntaxError);
 		});
@@ -156,9 +214,12 @@ describe('Syntax errors', function() {
 		it('throws when _else occurs more than once', function() {
 			expect(() => _`${_if(true)}${_else}${_else}`).to.throw(ConditionalTagSyntaxError);
 		});
+
 	});
 
+
 	describe('switch syntax', function() {
+		
 		it('throws when _switch occurs more than once', function() {
 			expect(() => _`${_switch(1)}${_switch(2)}`).to.throw(ConditionalTagSyntaxError);
 		});
@@ -178,5 +239,6 @@ describe('Syntax errors', function() {
 		it('throws when _endswitch occurs without preceding _switch', function() {
 			expect(() => _`${_endswitch}`).to.throw(ConditionalTagSyntaxError);
 		});
+
 	});
 });

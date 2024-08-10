@@ -6,6 +6,7 @@ const importedModules = { iftag };
 const expectedModules = {
 	iftag: [
 		'_',
+		'_async',
 		'_if',
 		'_elseif',
 		'_else',
