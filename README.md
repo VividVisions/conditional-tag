@@ -1,5 +1,4 @@
 # conditional-tag
-
 Clean, easily readable conditional statements in [template literals/strings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) for Node.js and browsers. Provides `if` / `elseif` / `else` and `switch` / `case` / `default` syntax options.
 
 ```javascript
@@ -38,9 +37,11 @@ const html = _`<ul>
     - [\_endswitch](#_endswitch)
     - [Examples](#examples-2)
   - [\_always expression](#_always-expression)
+  - [Other expression functions](#other-expression-functions)
+    - [Prevent unnecessary function calls](#prevent-unnecessary-function-calls)
+    - [Asynchronous functions](#asynchronous-functions)
   - [Whitespace\/Line trimming](#whitespaceline-trimming)
-  - [Other expressions](#other-expressions)
-  - [Importing convenience](#importing-convenience)
+- [Importing convenience](#importing-convenience)
 - [License](#license)
 
 
@@ -75,8 +76,8 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.${_endif
 ```
 
 ## ES module
-
 conditional-tag has been written as an ECMAScript module and all examples will use ES module syntax. If you want to use conditional-tag within a CommonJS application, use dynamic [`import()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) instead of `require()`.
+
 
 ## Installation
 
@@ -89,18 +90,17 @@ npm install conditional-tag
 ### Browser
 You'll find a browser-ready, minimized file in the `browser` directory: `conditional-tag.min.js`. 
 
-```javascript
+```html
 <script type="module">
   import { _, _if, _else, _endif } from './conditional-tag.min.js';
   
-  console.log(_`This is working in the browser too! ${_if(true)}Yay!${_else}Boo!${_endif}`);
+  console.log(_`This is working in the browser too! ${_if(true)}Yay${_else}Boo${_endif}!`);
 </script>
 ```
 
 ## Usage
 
 ### Tag function \_\(\)
-
 conditional-tag provides the tag function `_()`. If a template string is tagged with this function, all conditional-tag expressions described further below can be used within the string.
 
 ```javascript
@@ -112,7 +112,6 @@ const str = _`This string is tagged and ready for conditional-tag expressions.`;
 ⚠️ If you forget to tag the template string, the conditional logic will *not* work. You may see "[object Object]" in your string as a result. A `TypeError` will likely get thrown ("Cannot convert a Symbol value to a string").
 
 ### if syntax
-
 conditional-tag provides the following expressions for conditional blocks using *if* syntax.
 
 #### \_if\(_condition_\)
@@ -130,7 +129,6 @@ Closes the if-block. Another conditional-tag block can follow. Can be omitted if
 _Note_: While `_if()` and `_elseif()` are functions, `_else` and `_endif` are variables.
 
 A `ConditionalTagSyntaxError` is thrown when there's something wrong with the syntax, like using `_elseif(…)` after `_else`.
-
 
 #### Examples
 
@@ -151,7 +149,6 @@ str = _`X is ${_if(x === 1)}one${_elseif(x === 2)}two${_else}neither one nor two
 ```
 
 ### switch syntax
-
 conditional-tag provides the following expressions for conditional blocks using *switch* syntax.
 
 ⚠️ **Attention**: Unlike the actual `switch(…)` statement in JavaScript, there is *no* fall-through and *no* `break`. Each `_case(…)` will be evaluated independently. However, `_case(…)` can be passed multiple values, all of which will be compared to the switch-value. The condition is met, when at least one value is equal to it.
@@ -160,7 +157,7 @@ conditional-tag provides the following expressions for conditional blocks using 
 Opens a switch-block. Stores the value for further comparison. Does not affect the directly following strings and (non-switch-block) expressions.
 
 #### \_case\(_value_ \[, _value_, …\]\)
-Tests the passed value(s) and the one stored in `${_switch(…)}` for (deep, strict) equality. Utilizes Node's [assert.deepStrictEqual()](https://nodejs.org/docs/latest/api/assert.html#assertdeepstrictequalactual-expected-message) internally. If at least one of the values are equal, the strings and (non-switch-block) expressions following the `${_case(…)}` expression will be rendered until another switch-block expression or the end of the template string is encountered.
+Tests the passed value(s) and the one stored in `${_switch(…)}` for strict equality. If at least one of the values are equal, the strings and (non-switch-block) expressions following the `${_case(…)}` expression will be rendered until another switch-block expression or the end of the template string is encountered.
 
 If there's no string or expression between `${_switch(…)}` and `${_case(…)}`, they can be chained together as one expression: `${_switch(…)._case(…)}`.
 
@@ -197,7 +194,6 @@ ${_default}Shown when x is anything but 1, 2 or 3.`;
 ```
 
 ### \_always expression
-
 conditional-tag also provides a special `_always` expression. Strings and (non-conditional-tag) expressions following `${_always}` will **always** be rendered until a conditional-tag expression or the end of the template string is encountered, even if they are within a block which would otherwise stay unrendered.
 
 ```js
@@ -205,12 +201,61 @@ import { _, _switch, _case, _default, _endswitch, _always } from 'conditional-ta
 
 let x = 1;
 let str = _`${_switch(x)}X is ${_case(1)}one${_case(2)}two${_always} (This will be rendered anyway!)${_default}neither one nor two${_endswitch}.`;
-
 // Result: 'X is one (This will be rendered anyway!).' 
 ```
 
+### Other expression functions
+Naturally, you can use non-condtional-tag expressions in tagged template literals.  
+⚠️ **BUT**: If you call a function in an expression, the call is triggered regardless of being in a rendered or unerendered conditional-tag block:
+
+```javascript
+import { _, _if } from 'conditional-tag';
+
+function test() {
+  return 'called';
+}
+
+const str = _`${_if(false)} not rendered ${test()}`;
+// Result: '' but test() has been called despite being in an unrendered block.
+```
+
+#### Prevent unnecessary function calls
+
+To prevent this from happening, just wrap your function call in an arrow function. The tag function will recognize them and only trigger a call in rendered blocks.
+
+```javascript
+import { _, _if } from 'conditional-tag';
+
+function test() {
+  return 'called';
+}
+
+const str = _`${_if(false)} not rendered ${() => test()}`;
+// Result: '' and test() will NOT have been called.
+```
+
+This may make the template literal a bit harder to read but it saves precious CPU time.
+
+#### Asynchronous functions
+
+If you have to call asynchronous functions in an expression, use the special `_async()` tag function. It works exactly as the `_()` tag function but is able to handle Promises. There's no need to change the wrapping arrow function.
+
+```javascript
+import { _async, _if } from 'conditional-tag';
+
+function asyncTest() {
+  return Promise.resolve('called');
+}
+
+const str = await _async`${_if(true)}${() => asyncTest()}`;
+// Result: 'called'
+```
+
+_Note_: If you use the synchronous tag function `_()` and call asynchronous functions in expressions, you will get errors.
+
+
 ### Whitespace\/line trimming
-Conditional-tag expressions don't add any whitespace to the resulting string. Furthermore, if a conditional-tag expression is the only expression in a line and is only - if at all - preceded and/or followed by whitespace characters, the whole line gets trimmed.
+Conditional-tag expressions don't add any whitespace to the resulting string. Furthermore, if a conditional-tag expression is the only expression in a line of a multi-line template string and is only - if at all - surrounded by whitespace characters, the whole line gets trimmed.
 
 ```javascript
 import { _, _switch, _case, _default, _endswitch, _always } from 'conditional-tag';
@@ -241,20 +286,7 @@ Result:
 */
 ```
 
-### Other expressions
-
-Naturally, you can use non-condtional-tag expressions in tagged template literals.
-
-```javascript
-import { _, _if, _elseif, _else, _endif } from 'conditional-tag';
-
-let x = 1;
-let str = _`X is ${_if(x === 1)}one and ${another.expression()}${_elseif(x === 2)}two${_else}neither one nor two${_endif}.`;
-// Result: 'X is one and [the result of another.expression()].'
-```
-
 ### Importing convenience
-
 All conditional-tag expressions are also available through the tag function itself (without the leading underscore), so they don't have to be imported individually. This could however throw off syntax highlighting in your editor of choice (and also be considered a tad less readable).
 
 ```javascript
@@ -266,5 +298,4 @@ str = _`X is ${_.if(x === 1)}one${_.elseif(x === 2)}two${_.else}neither one nor 
 ```
 
 ## License
-
 conditional-tag is © 2024 Walter Krivanek and released under the [MIT license](https://mit-license.org).
