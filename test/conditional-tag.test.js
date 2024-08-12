@@ -37,16 +37,30 @@ describe('Rendering', function() {
 			expect(test).to.equal('.ELSE');
 		});
 
-		it('Correctly renders nested _if expression in rendered block', function() {
-			const test = _`${_if(true)}IF${_if(true)}.NESTEDIF${_endif}.AFTERNESTED${_endif}`;
-			expect(test).to.equal('IF.NESTEDIF.AFTERNESTED');
-		});
 
-		it('Correctly ignores nested if-block in unrendered block', function() {
-			const test = _`${_if(false)}IF${_if(true)}.NESTEDIF${_elseif(true)}.NESTEDELSEIF${_else}.NESTEDELSE${_endif}.AFTERNESTED${_endif}`;
-			expect(test).to.equal('');
-		});
+		describe('Nesting', function() {
 
+			it('Correctly renders nested _if expression in rendered if-block', function() {
+				const test = _`${_if(true)}IF${_if(true)}.NESTEDIF${_endif}.AFTERNESTED${_endif}`;
+				expect(test).to.equal('IF.NESTEDIF.AFTERNESTED');
+			});
+
+			it('Correctly ignores nested if-block in unrendered if-block', function() {
+				const test = _`${_if(false)}IF${_if(true)}.NESTEDIF${_elseif(true)}.NESTEDELSEIF${_else}.NESTEDELSE${_endif}.AFTERNESTED${_endif}`;
+				expect(test).to.equal('');
+			});
+
+			it('Correctly renders nested _switch expression in rendered if-block', function() {
+				const test = _`${_if(true)}IF${_switch(true)._case(true)}.NESTEDCASE${_endswitch}.AFTERNESTED${_endif}`;
+				expect(test).to.equal('IF.NESTEDCASE.AFTERNESTED');
+			});
+
+			it('Correctly ignores nested switch-block in unrendered if-block', function() {
+				const test = _`${_if(false)}IF${_switch(true)._case(true)}.NESTEDCASE1${_case(false)}.NESTEDCASE2${_default}.NESTEDDEFAULT${_endswitch}.AFTERNESTED${_endif}`;
+				expect(test).to.equal('');
+			});
+
+		});
 	});
 
 
@@ -85,6 +99,30 @@ describe('Rendering', function() {
 			expect(test).to.equal('SWITCH.CASE2');
 		});
 
+
+		describe('Nesting', function() {
+
+			it('Correctly renders nested _switch expression in rendered switch-block', function() {
+				const test = _`${_switch(true)._case(true)}CASE1${_switch(false)._case(true)}CASE1.1${_case(false)}.CASE1.2${_endswitch}.AFTERNESTED${_endswitch}`;
+				expect(test).to.equal('CASE1.CASE1.2.AFTERNESTED');
+			});
+
+			it('Correctly ignores nested switch-block in unrendered switch-block', function() {
+				const test = _`${_switch(false)._case(true)}CASE1${_switch(false)._case(true)}CASE1.1${_case(false)}.CASE1.2${_endswitch}.AFTERNESTED${_endswitch}`;
+				expect(test).to.equal('');
+			});
+
+			it('Correctly renders nested _if expression in rendered switch-block', function() {
+				const test = _`${_switch(true)._case(true)}CASE1${_if(true)}.IF${_elseif(false)}.ELSE${_endif}.AFTERNESTED${_endswitch}`;
+				expect(test).to.equal('CASE1.IF.AFTERNESTED');
+			});
+
+			it('Correctly ignores nested if-block in unrendered switch-block', function() {
+				const test = _`${_switch(false)._case(true)}CASE1${_if(true)}IF${_elseif(false)}.ELSEIF${_endif}.AFTERNESTED${_endswitch}`;
+				expect(test).to.equal('');
+			});
+
+		});
 	});
 	
 
@@ -226,13 +264,13 @@ describe('Syntax errors', function() {
 
 	describe('switch syntax', function() {
 		
-		it('throws when _switch occurs more than once', function() {
-			expect(() => _`${_switch(1)}${_switch(2)}`).to.throw(ConditionalTagSyntaxError);
-		});
+		// it('throws when _switch occurs more than once', function() {
+		// 	expect(() => _`${_switch(1)}${_switch(2)}`).to.throw(ConditionalTagSyntaxError);
+		// });
 
-		it('throws when _switch occurs more than once (chained)', function() {
-			expect(() => _`${_switch(1)}${_switch(2)._case(3)}`).to.throw(ConditionalTagSyntaxError);
-		});
+		// it('throws when _switch occurs more than once (chained)', function() {
+		// 	expect(() => _`${_switch(1)}${_switch(2)._case(3)}`).to.throw(ConditionalTagSyntaxError);
+		// });
 
 		it('throws when _case occurs without preceding _switch', function() {
 			expect(() => _`${_case(1)}`).to.throw(ConditionalTagSyntaxError);
