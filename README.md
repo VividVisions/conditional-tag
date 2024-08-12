@@ -40,6 +40,7 @@ const html = _`<ul>
   - [Other expression functions](#other-expression-functions)
     - [Prevent unnecessary function calls](#prevent-unnecessary-function-calls)
     - [Asynchronous functions](#asynchronous-functions)
+  - [Nesting](#nesting)
   - [Whitespace\/Line trimming](#whitespaceline-trimming)
 - [Importing convenience](#importing-convenience)
 - [License](#license)
@@ -124,7 +125,7 @@ Evaluates the passed condition if no preceding condition has been met. If the co
 If no preceding condition has been met, the strings and (non-if-block) expressions following the `${_else}` expression will be rendered until an `${_endif}` expression or the end of the template string is encountered.
 
 #### \_endif
-Closes the if-block. Another conditional-tag block can follow. Can be omitted if `${_endif}` would be at the very end of the template string.
+Closes the if-block. Can be omitted if `${_endif}` would be at the very end of the template string but it is not recommended, especially with nested conditional-tag blocks.
 
 _Note_: While `_if()` and `_elseif()` are functions, `_else` and `_endif` are variables.
 
@@ -151,7 +152,8 @@ str = _`X is ${_if(x === 1)}one${_elseif(x === 2)}two${_else}neither one nor two
 ### switch syntax
 conditional-tag provides the following expressions for conditional blocks using *switch* syntax.
 
-⚠️ **Attention**: Unlike the actual `switch(…)` statement in JavaScript, there is *no* fall-through and *no* `break`. Each `_case(…)` will be evaluated independently. However, `_case(…)` can be passed multiple values, all of which will be compared to the switch-value. The condition is met, when at least one value is equal to it.
+⚠️ **Attention**: Unlike the actual `switch(…)` statement in JavaScript, there is *no* fall-through and *no* `break`. Each `_case(…)` will be evaluated independently. However, `_case(…)` can be passed multiple values, all of which will be compared to the switch-value. The condition is met, when at least one value is equal to it.  
+Another difference is that `_default` must come after the `_case()` expressions.
 
 #### \_switch\(_value_\)
 Opens a switch-block. Stores the value for further comparison. Does not affect the directly following strings and (non-switch-block) expressions.
@@ -165,7 +167,7 @@ If there's no string or expression between `${_switch(…)}` and `${_case(…)}`
 If no preceding `${_case(…)}` expression had values equal to the switch, the strings and (non-switch-block) expressions following the `${_default}` expression will be rendered until an `${_endswitch}` expression or the end of the template string is encountered.
 
 #### \_endswitch
-Closes the switch-block. Another conditional-tag block can follow. Can be omitted if `${_endswitch}` would be at the very end of the template string.
+Closes the switch-block. Can be omitted if `${_endswitch}` would be at the very end of the template string but it is not recommended, especially with nested conditional-tag blocks.
 
 _Note_: While `_switch()` and `_case()` are functions, `_default` and `_endswitch` are variables.
 
@@ -194,7 +196,7 @@ ${_default}Shown when x is anything but 1, 2 or 3.`;
 ```
 
 ### \_always expression
-conditional-tag also provides a special `_always` expression. Strings and (non-conditional-tag) expressions following `${_always}` will **always** be rendered until a conditional-tag expression or the end of the template string is encountered, even if they are within a block which would otherwise stay unrendered.
+conditional-tag also provides a special `_always` expression. Strings and (non-conditional-tag) expressions following `${_always}` will **always** be rendered until a conditional-tag expression or the end of the template string is encountered, even if they are within a block which would otherwise stay unrendered (no matter the nesting depth).
 
 ```js
 import { _, _switch, _case, _default, _endswitch, _always } from 'conditional-tag';
@@ -253,6 +255,34 @@ const str = await _async`${_if(true)}${() => asyncTest()}`;
 
 _Note_: If you use the synchronous tag function `_()` and call asynchronous functions in expressions, you will get errors.
 
+
+### Nesting
+Both, if-blocks and switch-blocks can be nested in other if- or switch-blocks:
+
+```javascript
+import { _, _if, _else, _endif, _switch, _case, _endswitch } from 'conditional-tag';
+
+const x = true;
+const y = false;
+
+const str =  _`
+${_switch(x)._case(true)}
+x is true.
+${_if(y === true)}
+y is true as well.
+${_else}
+y is NOT true as well.
+${_endif}
+${_case(false)}
+x is false.
+${_endswitch}
+`;
+// Result: 
+// 'x is true.
+// y is NOT true as well.'
+```
+
+Be mindful of your `${_endif}` and `${_switch}` expressions because forgetting or misplacing them will lead to confusing results and/or errors!
 
 ### Whitespace\/line trimming
 Conditional-tag expressions don't add any whitespace to the resulting string. Furthermore, if a conditional-tag expression is the only expression in a line of a multi-line template string and is only - if at all - surrounded by whitespace characters, the whole line gets trimmed.
