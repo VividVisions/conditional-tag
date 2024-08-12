@@ -1,10 +1,10 @@
 
-import { expect } from 'chai';
-import * as iftag from 'conditional-tag';
+import { expect } from './chai.js';
+import * as conditionalTag from 'conditional-tag';
 
-const importedModules = { iftag };
+const importedModules = { conditionalTag };
 const expectedModules = {
-	iftag: [
+	conditionalTag: [
 		'_',
 		'_async',
 		'_if',
@@ -28,7 +28,7 @@ function sameMembers(arr1, arr2) {
 }
 
 describe('Package', function() {
-	const modName = 'iftag';
+	const modName = 'conditionalTag';
 
 	expectedModules[modName].forEach(name => {
 		it(`${name} should be exposed`, function() {
@@ -40,13 +40,13 @@ describe('Package', function() {
 		expect(sameMembers(Object.keys(importedModules[modName]), expectedModules[modName])).to.be.true;
 	});
 
-	expectedModules.iftag
+	expectedModules.conditionalTag
 		.filter(name => name !== '_' && name.startsWith('_'))
 		.forEach(name => {
 			name = name.substring(1);
 			it(`_${name} should be exposed through tag function as _.${name}`, function() {
-				expect(importedModules.iftag['_' + name]).to.be.satisfy(val => (typeof val === 'function' || typeof val === 'symbol'));
-				expect(importedModules.iftag._[name]).to.equal(importedModules.iftag['_' + name]);
+				expect(importedModules.conditionalTag['_' + name]).to.be.satisfy(val => (typeof val === 'function' || typeof val === 'symbol'));
+				expect(importedModules.conditionalTag._[name]).to.equal(importedModules.conditionalTag['_' + name]);
 			});
 		});
 
