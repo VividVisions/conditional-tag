@@ -33,8 +33,18 @@ describe('Rendering', function() {
 		});
 
 		it('Correctly renders even if _endif() is omitted at the end', function() {
-			const test = _`${_if(false)}IF1${_elseif(false)}.ELSEIF${_else}.ELSE`;
+			const test = _`${_if(false)}IF${_elseif(false)}.ELSEIF${_else}.ELSE`;
 			expect(test).to.equal('.ELSE');
+		});
+
+		it('Correctly renders nested _if expression in rendered block', function() {
+			const test = _`${_if(true)}IF${_if(true)}.NESTEDIF${_endif}.AFTERNESTED${_endif}`;
+			expect(test).to.equal('IF.NESTEDIF.AFTERNESTED');
+		});
+
+		it('Correctly ignores nested if-block in unrendered block', function() {
+			const test = _`${_if(false)}IF${_if(true)}.NESTEDIF${_elseif(true)}.NESTEDELSEIF${_else}.NESTEDELSE${_endif}.AFTERNESTED${_endif}`;
+			expect(test).to.equal('');
 		});
 
 	});
@@ -197,10 +207,6 @@ describe('Rendering', function() {
 describe('Syntax errors', function() {
 	describe('if syntax', function() {
 		
-		it('throws when _if occurs more than once', function() {
-			expect(() => _`${_if(true)}${_if(true)}`).to.throw(ConditionalTagSyntaxError);
-		});
-
 		it('throws when _elseif, _else or _endif occur without preceding _if', function() {
 			expect(() => _`${_elseif(true)}`).to.throw(ConditionalTagSyntaxError);
 			expect(() => _`${_else}`).to.throw(ConditionalTagSyntaxError);
