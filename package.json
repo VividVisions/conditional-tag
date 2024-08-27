@@ -59,7 +59,7 @@
 		"chai-spies": "^1.1.0",
 		"colorette": "^2.0.20",
 		"git-repo-info": "^2.1.1",
-		"mocha": "^10.7.0",
-		"rollup": "^4.20.0"
+		"mocha": "^10.7.3",
+		"rollup": "^4.21.1"
 	}
 }
