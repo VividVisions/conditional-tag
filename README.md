@@ -282,7 +282,7 @@ ${_endswitch}
 // y is NOT true as well.'
 ```
 
-Be mindful of your `${_endif}` and `${_switch}` expressions because forgetting or misplacing them will lead to confusing results and/or errors!
+Be mindful of your `${_endif}` and `${_endswitch}` expressions because forgetting or misplacing them will lead to confusing results and/or errors!
 
 ### Whitespace\/line trimming
 Conditional-tag expressions don't add any whitespace to the resulting string. Furthermore, if a conditional-tag expression is the only expression in a line of a multi-line template string and is only - if at all - surrounded by whitespace characters, the whole line gets trimmed.
