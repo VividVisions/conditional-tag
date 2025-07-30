@@ -47,7 +47,7 @@
 		".": "./index.js"
 	},
 	"dependencies": {
-		"debug": "^4.4.0"
+		"debug": "^4.4.1"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^28.0.2",
