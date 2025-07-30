@@ -328,4 +328,4 @@ str = _`X is ${_.if(x === 1)}one${_.elseif(x === 2)}two${_.else}neither one nor 
 ```
 
 ## License
-conditional-tag is © 2024 Walter Krivanek and released under the [MIT license](https://mit-license.org).
+conditional-tag is © 2024-2025 Walter Krivanek and released under the [MIT license](https://mit-license.org).
