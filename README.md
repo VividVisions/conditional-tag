@@ -223,7 +223,7 @@ const str = _`${_if(false)} not rendered ${test()}`;
 
 #### Prevent unnecessary function calls
 
-To prevent this from happening, just wrap your function call in an arrow function. The tag function will recognize them and only trigger a call in rendered blocks.
+To prevent this from happening, just wrap your function call in an anonymous arrow function. The tag function will recognize them and only trigger a call in rendered blocks.
 
 ```javascript
 import { _, _if } from 'conditional-tag';
